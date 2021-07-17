@@ -2,7 +2,7 @@ import { memo } from 'react';
 import styles from './Foo.less';
 import Bar from "./Bar";
 
-export default memo(
+const Foo = memo(
   (props) => {
     return <div className={styles.a}>
       <div>Foo</div>
@@ -13,3 +13,4 @@ export default memo(
     return true;
   },
 );
+export default Foo;

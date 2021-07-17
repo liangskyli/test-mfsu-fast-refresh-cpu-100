@@ -1,6 +1,6 @@
 import { memo } from 'react';
 
-export default memo(
+const Bar = memo(
   (props) => {
     return <div>Bar</div>
   },
@@ -8,3 +8,5 @@ export default memo(
     return true;
   },
 );
+
+export default Bar;
