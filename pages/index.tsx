@@ -5,6 +5,7 @@ import Container from '../components/Card/Container'
 import { DndProvider } from 'react-dnd'
 import { HTML5Backend } from 'react-dnd-html5-backend'
 import TableContainer from '../components/TableMove/Container'
+import TabBar from "../components/TabBar";
 
 
 
@@ -16,6 +17,9 @@ export default function Page() {
     <div>
       <h1 className={styles.title}>Page index</h1>
         <div>aaa</div>
+        <DndProvider backend={HTML5Backend}>
+        <TabBar  />
+        </DndProvider>
       <DndProvider backend={HTML5Backend}>
         <Container />
       </DndProvider>
@@ -25,7 +29,7 @@ export default function Page() {
      {/* <Foo />
       <Dar />*/}
         {/*<IconFont name="icon-common-back-help" />
-        <TabBar activeTab="orderList" />*/}
+        >*/}
     </div>
   );
 }
