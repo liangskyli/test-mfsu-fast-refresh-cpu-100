@@ -1,5 +1,0 @@
-
-
-interface Window {
-  globalMoveCard: boolean;
-}
