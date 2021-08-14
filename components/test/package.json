@@ -1,0 +1,52 @@
+{
+  "name": "bff-yxdj-backend",
+  "version": "2.0.0",
+  "description": "云客后台-移动交易",
+  "main": "index.js",
+  "repository": "git@git.myscrm.cn:trade/bff-yxdj-backend.git",
+  "author": "yinhy02 <yinhy02@mingyuanyun.com>",
+  "license": "MIT",
+  "probe": "/debug/vars",
+  "scripts": {
+    "postinstall": "node config/init.js",
+    "dev": "cross-env NODE_ENV=dev yunfly",
+    "watch:dev": "cross-env NODE_ENV=dev yunfly --watch",
+    "mock": "node -r ts-node/register --trace-warnings ./mock/index.ts",
+    "run": "cross-env NODE_ENV=production yunfly",
+    "test": "yarn clean && yarn compile && cross-env NODE_ENV=production YUNKE_ENV=test jest -runInBand --forceExit --colors --detectOpenHandles",
+    "build": "npm run yunke_install && npm run grpc-gen && npm run clean && npm run compile",
+    "clean": "gts clean",
+    "compile": "tsc -p .",
+    "grpc-gen": "grpc-code-gen gen",
+    "watch": "cross-env NODE_ENV=dev tsc --watch --sourceMap --outDir ./build/ -p .",
+    "yunke_install": "yarn set_registry && yarn --ignore-optional --frozen-lockfile --check-files",
+    "set_registry": "npm config set registry https://registry.npm.taobao.org && npm config set @yunke:registry https://registry-npm.myscrm.cn/repository/yunke/"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "*.ts": "prettier --write"
+  },
+  "devDependencies": {
+    "@yunke/bff-unit-test": "^0.0.2",
+    "@yunke/yungen": "^2.0.23",
+    "cross-env": "^7.0.3",
+    "gts": "^3.1.0",
+    "husky": "^7.0.1",
+    "lint-staged": "^11.1.2",
+    "prettier": "^2.3.2",
+    "ts-node": "^10.2.0",
+    "typescript": "4.3.5"
+  },
+  "dependencies": {
+    "@yunke/oss-sts-token": "^1.0.11",
+    "@yunke/trade-bff": "^0.0.3",
+    "@yunke/yunfly": "^3.1.12"
+  },
+  "optionalDependencies": {
+    "grpc": "^1.24.3"
+  }
+}
