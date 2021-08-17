@@ -12,20 +12,20 @@ export interface Options {
 
 const BASE_DIR = path.join(process.cwd(), 'mock-code-gen');
 
-const getData = async ()=>{
-    const files = await readFiles([path.join(process.cwd(), `test/types.ts`)]);
+const getMockData = (interfaceName:string,files:any)=>{
     const imOptions = Object.assign({
         files,
-        interfaces:['ActivityBase'],
+        interfaces:[interfaceName],
         output:'string',
         isOptionalAlwaysEnabled:true,
         isFixedMode: false
     });
-    const output = mock(imOptions) as string;// as Record<string, {}>;
-    console.log('output:',output,path.join(process.cwd(), `test/types.ts`));
-    fs.writeFileSync(path.join(process.cwd(), `test/test.js`), output);
+    const output = mock(imOptions) as string;
+    return output.replace(';',',');
+    //console.log('output:',output);
+    //fs.writeFileSync(path.join(process.cwd(), `test/test.js`), output);
 };
-getData().then();
+//getMockData().then();
 
 const genSpace = (num: number) => {
     let space = '';
@@ -36,14 +36,15 @@ const genSpace = (num: number) => {
 }
 
 
-const genImplementationData = (path: string, methods: any) => {
+const genImplementationData = (path: string, methods: any,files:any) => {
     const data: string[] = [];
     methods.map((item: any) => {
         if (path.indexOf(item.fullName.substring(0, item.fullName.lastIndexOf("."))) > -1) {
             data.push(
                 `{
       ${item.name}: {
-        response: {},
+        response: //{},
+${getMockData(item.responseType,files)}
       },
     },`
             );
@@ -73,6 +74,8 @@ export async function gen(opt: Options): Promise<string> {
     console.info(`Clean dir: ${genMockPath}`);
     const genProtoPath = path.join(genMockPath, "proto");
     fs.ensureDirSync(genProtoPath);
+
+    const files = await readFiles([path.join(process.cwd(), `test/types.ts`)]);
 
     // mock 服务端口从50000开始自动生成
     let servicePort = 50000;
@@ -110,7 +113,7 @@ export async function gen(opt: Options): Promise<string> {
 
 const ${service.name}: IProtoItem = {
   path: "${protoPath}",
-  implementationData: ${genImplementationData(protoPath, methods)}
+  implementationData: ${genImplementationData(protoPath, methods,files)}
 };
 export default ${service.name};
 `;
