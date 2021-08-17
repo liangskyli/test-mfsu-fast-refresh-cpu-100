@@ -16,9 +16,9 @@ const getData = async ()=>{
     const files = await readFiles([path.join(process.cwd(), `test/types.ts`)]);
     const imOptions = Object.assign({
         files,
-        interfaces:['GetAuditRecordListResponse'],
+        interfaces:['ActivityBase'],
         output:'string',
-        isOptionalAlwaysEnabled:false,
+        isOptionalAlwaysEnabled:true,
         isFixedMode: false
     });
     const output = mock(imOptions) as string;// as Record<string, {}>;
