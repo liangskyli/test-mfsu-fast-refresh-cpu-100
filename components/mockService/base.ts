@@ -41,7 +41,7 @@ const genImplementationData = (path: string, methods: any, protoName: string, ro
   methods.map((item: any) => {
     if (path.indexOf(item.fullName.substring(0, item.fullName.lastIndexOf("."))) > -1) {
       let typePath = `${protoName}.${item.responseType}`;
-      if (item.responseType.indexOf("common.") > -1) {
+      if (item.responseType.indexOf(".") > -1) {
         typePath = `${item.responseType}`;
       }
       const typeMessage = root.lookupType(typePath);
