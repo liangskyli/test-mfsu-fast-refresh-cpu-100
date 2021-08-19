@@ -61,7 +61,7 @@ const genImplementationData = (path: string, result: any, protoName: string, roo
       const typeMessage = root.lookupType(typePath);
       //const message = typeMessage.create();
 
-     const response =  genResponseData({typePath,typeMessage});
+     const response =  genResponseData({typePath,typeMessage,protoName,root});
      //console.log('res',response);
 
 

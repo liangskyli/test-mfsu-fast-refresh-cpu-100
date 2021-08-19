@@ -8,15 +8,22 @@ import {TS_TYPE_2_DEFAULT_MAP, stringLeftNumber} from "./utils";
     reg?: RegExp;
 };*/
 
-const genFieldObj = (typeMessage: protobufjs.Type) => {
+
+let repeatList: string[] = [];
+
+const genFieldObj = (typeMessage: protobufjs.Type, protoName: string, root: protobufjs.Root, oldFieldType?: string) => {
     const {fields} = typeMessage;
     let jsonArr: string[] = [];
     Object.keys(fields).map((field) => {
-        const {type: fieldType, resolvedType} = fields[field];
+        const {type: fieldType, rule} = fields[field];
         const jsType = PROTO_TYPE_2_TS_TYPE_MAP[fieldType];
         //console.log(fieldType, jsType);
-        if (fieldType === 'ActivityBase') {
-            console.log(/*fields[field],*/resolvedType)
+        if (fieldType === 'BlockRelation') {
+            return;
+        }
+        if (oldFieldType === fieldType) {
+            console.log('ddddddd')
+            //return;
         }
         //protobufjs.Field
         let fieldValue: any = null;
@@ -24,12 +31,47 @@ const genFieldObj = (typeMessage: protobufjs.Type) => {
             fieldValue = TS_TYPE_2_DEFAULT_MAP[jsType];
             jsonArr.push(`${field}: ${fieldValue},`);
         } else {
-            //console.log('fffeee',resolvedType)
-            if (resolvedType instanceof protobufjs.Type) {
-                console.log('ddddd:',genFieldObj(resolvedType))
-                jsonArr.push(...genFieldObj(resolvedType));
+            const repeatCount = repeatList.filter((value => {
+               return  value === fieldType;
+            })).length;
+            if(repeatCount < 5) {
+console.log(repeatList.length,repeatCount)
+
+                if (rule === 'repeated') {
+                    repeatList.push(fieldType);
+                }
+
+                let typePath = `${protoName}.${fieldType}`;
+                // 默认Message不能有. 存在时标明是其它命名空间下的类型
+                /*if (item.responseType.indexOf(".") > -1) {
+                    typePath = `${item.responseType}`;
+                }*/
+                const typeMessage = root.lookupType(typePath);
+                //typeMessage.fields
+                //typeMessage.fieldsArray
+                console.log(rule, typePath)
+
+                const dataObj = genFieldObj(typeMessage, protoName, root, fieldType);
+                //console.log(dataObj);
+                if (rule === undefined) {
+
+                }
+                let str = '';
+                if (rule === 'repeated') {
+                    str = stringLeftNumber('[\n', 2);
+                    str = str + stringLeftNumber('{\n', 4);
+                    str = str + stringLeftNumber(dataObj.join('\n'), 4);
+                    str = str + stringLeftNumber(`\n}`, 2);
+                    str = str + stringLeftNumber(`\n]`, 0);
+                } else {
+                    dataObj.unshift(`{`);
+                    str = str + stringLeftNumber(dataObj.join('\n'), 2);
+                    str = str + stringLeftNumber(`\n}`, 0);
+                }
+
+                jsonArr.push(`${field}: ${str},`);
             }
-            //console.log('typeof:', resolvedType instanceof protobufjs.Type);
+
         }
     });
     return jsonArr;
@@ -39,22 +81,27 @@ const genFieldObj = (typeMessage: protobufjs.Type) => {
 export default function genResponseData(opt: {
     typePath: string;
     typeMessage: protobufjs.Type;
+    protoName: string;
+    root: protobufjs.Root;
 }): string {
     const {
         typePath,
-        typeMessage
+        typeMessage,
+        protoName,
+        root
     } = opt;
 
-    if (typePath == 'trade_yxdj_proto.GetActivityResponse') {
-        //console.log('typeMessage:',fields)
-        //console.log(namespace,messages,enums)
-        //const jsonArr = genFieldObj(typeMessage);
-        //console.log('jsonArr', JSON.stringify(jsonArr));
-    }
+    let str = '';
 
-    const dataObj: string[] = genFieldObj(typeMessage);
+    if (typePath == 'trade_yxdj_proto.GetLibraryOptionByIdResponse') {
+
+    }
+    const dataObj: string[] = genFieldObj(typeMessage, protoName, root);
     dataObj.unshift(`{`);
-    let str = stringLeftNumber(dataObj.join('\n'), 10);
+    /*let*/
+    str = stringLeftNumber(dataObj.join('\n'), 10);
     str = str + stringLeftNumber(`\n}`, 8);
+
+
     return str;
 }

@@ -1,4 +1,4 @@
-
+//"test-gen": "cross-env TS_NODE_PROJECT=test/tsconfig.test.json node -r ts-node/register test/gen.ts",
 
 
 //const longsType = ['double', 'float', 'int64', 'uint64', 'sint64', 'fixed64', 'sfixed64'];
