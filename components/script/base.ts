@@ -2,13 +2,34 @@ import * as fs from "fs-extra";
 import * as path from "path";
 import * as protobufjs from "@yunke/protobufjs";
 import { inspectNamespace } from "@yunke/grpc-code-gen/build/pbjs";
+import type {
+  TEnum,
+  TMessage,
+  TMethod,
+  TService,
+} from "@yunke/grpc-code-gen/build/types";
 import genResponseData from "./genResponseData";
 import { genSpace } from "./utils";
+import { INamespace } from "@yunke/protobufjs";
 
-export interface Options {
+export type Options = {
   baseDir?: string;
   rootPath: string;
-}
+};
+type IInspectNamespace =
+  | {
+      json: {
+        name: string;
+        fullName: string;
+        comment: string;
+      } & INamespace;
+      services: TService[];
+      methods: TMethod[];
+      messages: TMessage[];
+      enums: TEnum[];
+    }
+  | null
+  | undefined;
 
 const BASE_DIR = path.join(process.cwd(), "mock-code-gen");
 const grpcCodeGenConfigPath = path.join(
@@ -23,20 +44,18 @@ if (fs.existsSync(grpcCodeGenConfigPath)) {
 
 const genImplementationData = (
   path: string,
-  result: any,
+  methods: TMethod[],
   protoName: string,
   root: protobufjs.Root
 ) => {
-  const { /*services,*/ methods /*messages, enums*/ } = result;
-
   const data: string[] = [];
-  methods.map((item: any) => {
+  methods.map((item) => {
     if (
       path.indexOf(item.fullName.substring(0, item.fullName.lastIndexOf("."))) >
       -1
     ) {
       let typePath = `${protoName}.${item.responseType}`;
-      // responseType 默认Message不能有. 存在时标明是其它命名空间下的类型
+      // responseType 默认Message不能有. 存在时表明是其它命名空间下的类型
       if (item.responseType.indexOf(".") > -1) {
         typePath = `${item.responseType}`;
       }
@@ -104,15 +123,15 @@ export async function gen(opt: Options): Promise<string> {
       .filter((item) => item !== "")
       .join("-");
     const root = protobufjs.Root.fromJSON(rootObject[spaceServerName]);
-    const result: any = inspectNamespace(root);
-    const { services /*methods*/ /*messages, enums*/ } = result;
+    const result: IInspectNamespace = inspectNamespace(root);
+    const { services, methods } = result!;
     const serviceMockContent = [];
     serviceMockContent.push(
       `import type { IMockService } from "@yunke/trade-bff";`
     );
     const protoItem: string[] = [];
 
-    services.map((service: any) => {
+    services.map((service) => {
       const protoName = service.fullName.split(".")[0];
       const protoPath = `${spaceServerName}.${service.fullName}`;
       const protoServiceContent = `import type { IProtoItem } from "@yunke/trade-bff";
@@ -121,7 +140,7 @@ const ${service.name}: IProtoItem = {
   path: "${protoPath}",
   implementationData: ${genImplementationData(
     protoPath,
-    result,
+    methods,
     protoName,
     root
   )}
